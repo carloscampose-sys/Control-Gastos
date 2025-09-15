@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const categories = [
   'AHORRO',
@@ -20,7 +22,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -38,7 +40,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
         name: name.trim(),
         amount: expenseAmount,
         category,
-        date
+        date: date.toISOString().split('T')[0]
       };
 
       onAddExpense(newExpense);
@@ -47,7 +49,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
       setName('');
       setAmount('');
       setCategory('');
-      setDate('');
+      setDate(new Date());
       setError('');
       setIsFormVisible(false); // Hide form after successful submission
     } else {
@@ -62,7 +64,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
       setName('');
       setAmount('');
       setCategory('');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(formatDate(currentMonth));
       setError('');
     }
   };
@@ -149,13 +151,12 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
 
               <div className="form-group">
                 <label>Fecha:</label>
-                <input
-                  type="date"
+                <DatePicker
+                  selected={date}
+                  onChange={(date) => setDate(date)}
+                  dateFormat="dd/MM/yyyy"
                   className="date-input"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
                   required
-                  readOnly
                 />
               </div>
 
