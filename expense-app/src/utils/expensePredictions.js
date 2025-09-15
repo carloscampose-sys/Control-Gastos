@@ -351,3 +351,185 @@ export const formatCurrency = (amount) => {
     maximumFractionDigits: 0
   }).format(amount);
 };
+
+/**
+ * Get explanation for low or medium confidence analysis
+ */
+export const getConfidenceExplanation = (confidence, categoryAnalysis, totalCurrentExpenses) => {
+  if (confidence >= 0.7) return null; // No explanation needed for high confidence
+  
+  const explanations = [];
+  
+  if (confidence < 0.5) {
+    // Low confidence explanations
+    explanations.push({
+      type: 'warning',
+      title: '⚠️ Confianza Baja en las Predicciones',
+      message: 'Las predicciones tienen baja confianza debido a datos limitados o patrones inconsistentes.'
+    });
+    
+    if (totalCurrentExpenses < 5) {
+      explanations.push({
+        type: 'data',
+        title: '📊 Pocos Datos Disponibles',
+        message: `Solo tienes ${totalCurrentExpenses} gastos registrados este mes. Se necesitan más datos para predicciones precisas.`
+      });
+    }
+    
+    // Check for inconsistent patterns
+    const inconsistentCategories = Object.keys(categoryAnalysis).filter(category => {
+      const analysis = categoryAnalysis[category];
+      return analysis.confidence < 0.4;
+    });
+    
+    if (inconsistentCategories.length > 0) {
+      explanations.push({
+        type: 'pattern',
+        title: '🔄 Patrones Inconsistentes',
+        message: `Las categorías ${inconsistentCategories.slice(0, 3).join(', ')} muestran patrones irregulares de gasto.`
+      });
+    }
+    
+  } else if (confidence < 0.7) {
+    // Medium confidence explanations
+    explanations.push({
+      type: 'info',
+      title: '📈 Confianza Media en las Predicciones',
+      message: 'Las predicciones son moderadamente confiables, pero pueden mejorarse con más datos históricos.'
+    });
+    
+    if (totalCurrentExpenses < 10) {
+      explanations.push({
+        type: 'data',
+        title: '📊 Datos Moderados',
+        message: `Tienes ${totalCurrentExpenses} gastos registrados. Más transacciones mejorarían la precisión.`
+      });
+    }
+  }
+  
+  return explanations;
+};
+
+/**
+ * Get practical suggestions to improve prediction confidence
+ */
+export const getConfidenceImprovementSuggestions = (confidence, categoryAnalysis, totalCurrentExpenses) => {
+  if (confidence >= 0.7) return []; // No suggestions needed for high confidence
+  
+  const suggestions = [];
+  
+  // General suggestions based on confidence level
+  if (confidence < 0.5) {
+    suggestions.push({
+      priority: 'high',
+      icon: '📝',
+      title: 'Registra más gastos este mes',
+      description: 'Agrega todos tus gastos diarios, incluso los pequeños. Cada transacción ayuda a crear mejores patrones.',
+      action: 'Objetivo: Al menos 15-20 gastos por mes'
+    });
+    
+    suggestions.push({
+      priority: 'high',
+      icon: '🔄',
+      title: 'Incluye gastos recurrentes',
+      description: 'Registra servicios básicos, suscripciones y gastos fijos que se repiten cada mes.',
+      action: 'Revisa: luz, agua, internet, Netflix, etc.'
+    });
+  }
+  
+  if (confidence < 0.7) {
+    suggestions.push({
+      priority: 'medium',
+      icon: '📂',
+      title: 'Categoriza correctamente',
+      description: 'Asegúrate de usar las categorías apropiadas para cada gasto. Esto mejora el análisis de patrones.',
+      action: 'Revisa gastos mal categorizados'
+    });
+    
+    suggestions.push({
+      priority: 'medium',
+      icon: '📅',
+      title: 'Mantén consistencia temporal',
+      description: 'Registra gastos regularmente durante todo el mes, no solo al final.',
+      action: 'Registra gastos diariamente o semanalmente'
+    });
+  }
+  
+  // Specific suggestions based on category analysis
+  const lowConfidenceCategories = Object.keys(categoryAnalysis).filter(category => {
+    return categoryAnalysis[category].confidence < 0.5;
+  });
+  
+  if (lowConfidenceCategories.length > 0) {
+    suggestions.push({
+      priority: 'medium',
+      icon: '🎯',
+      title: 'Mejora categorías específicas',
+      description: `Las categorías ${lowConfidenceCategories.slice(0, 2).join(' y ')} necesitan más datos históricos.`,
+      action: 'Registra más gastos en estas categorías'
+    });
+  }
+  
+  // Data volume suggestions
+  if (totalCurrentExpenses < 5) {
+    suggestions.push({
+      priority: 'high',
+      icon: '⚡',
+      title: 'Acción inmediata requerida',
+      description: 'Con muy pocos gastos registrados, las predicciones son poco confiables.',
+      action: 'Registra al menos 10 gastos más este mes'
+    });
+  } else if (totalCurrentExpenses < 10) {
+    suggestions.push({
+      priority: 'medium',
+      icon: '📈',
+      title: 'Aumenta el volumen de datos',
+      description: 'Más transacciones registradas = predicciones más precisas.',
+      action: 'Objetivo: 15-20 gastos por mes'
+    });
+  }
+  
+  // Historical data suggestions
+  suggestions.push({
+    priority: 'low',
+    icon: '🕒',
+    title: 'Construye historial a largo plazo',
+    description: 'Mantén el registro durante 2-3 meses para obtener predicciones muy precisas.',
+    action: 'Continúa registrando gastos consistentemente'
+  });
+  
+  // Sort suggestions by priority
+  const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+  return suggestions.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+};
+
+/**
+ * Get confidence level details for display
+ */
+export const getConfidenceDetails = (confidence) => {
+  if (confidence >= 0.7) {
+    return {
+      level: 'high',
+      text: 'Alta',
+      color: '#10b981',
+      description: 'Las predicciones son muy confiables basadas en patrones sólidos de datos.',
+      icon: '✅'
+    };
+  } else if (confidence >= 0.5) {
+    return {
+      level: 'medium',
+      text: 'Media',
+      color: '#f59e0b',
+      description: 'Las predicciones son moderadamente confiables, pero pueden mejorarse.',
+      icon: '⚠️'
+    };
+  } else {
+    return {
+      level: 'low',
+      text: 'Baja',
+      color: '#ef4444',
+      description: 'Las predicciones tienen baja confianza debido a datos limitados.',
+      icon: '🔴'
+    };
+  }
+};
