@@ -15,7 +15,10 @@ import {
   getPredictionSummary,
   formatPredictionDate,
   formatCurrency,
-  getCategoryIcon
+  getCategoryIcon,
+  getConfidenceExplanation,
+  getConfidenceImprovementSuggestions,
+  getConfidenceDetails
 } from '../utils/expensePredictions';
 
 // Register Chart.js components
@@ -215,6 +218,67 @@ const NextMonthPredictions = ({ expenses, currentMonth }) => {
             {getConfidenceText(confidence)} ({Math.round(confidence * 100)}%)
           </span>
         </div>
+        
+        {/* Confidence Explanation and Suggestions */}
+        {confidence < 0.7 && (
+          <div className="confidence-insights">
+            {(() => {
+              const explanations = getConfidenceExplanation(confidence, categoryAnalysis, expenses.filter(expense => {
+                const expenseDate = new Date(expense.date + 'T12:00:00');
+                return expenseDate.getMonth() === currentMonth.getMonth() &&
+                       expenseDate.getFullYear() === currentMonth.getFullYear();
+              }).length);
+              
+              const suggestions = getConfidenceImprovementSuggestions(confidence, categoryAnalysis, expenses.filter(expense => {
+                const expenseDate = new Date(expense.date + 'T12:00:00');
+                return expenseDate.getMonth() === currentMonth.getMonth() &&
+                       expenseDate.getFullYear() === currentMonth.getFullYear();
+              }).length);
+              
+              return (
+                <>
+                  {explanations && explanations.length > 0 && (
+                    <div className="confidence-explanations">
+                      <h4>🔍 ¿Por qué la confianza es {getConfidenceText(confidence).toLowerCase()}?</h4>
+                      <div className="explanations-list">
+                        {explanations.map((explanation, index) => (
+                          <div key={index} className={`explanation-item ${explanation.type}`}>
+                            <h5>{explanation.title}</h5>
+                            <p>{explanation.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {suggestions && suggestions.length > 0 && (
+                    <div className="confidence-suggestions">
+                      <h4>💡 Cómo mejorar la precisión de las predicciones</h4>
+                      <div className="suggestions-list">
+                        {suggestions.map((suggestion, index) => (
+                          <div key={index} className={`suggestion-item priority-${suggestion.priority}`}>
+                            <div className="suggestion-header">
+                              <span className="suggestion-icon">{suggestion.icon}</span>
+                              <h5>{suggestion.title}</h5>
+                              <span className={`priority-badge ${suggestion.priority}`}>
+                                {suggestion.priority === 'high' ? 'Alta' :
+                                 suggestion.priority === 'medium' ? 'Media' : 'Baja'} Prioridad
+                              </span>
+                            </div>
+                            <p className="suggestion-description">{suggestion.description}</p>
+                            <div className="suggestion-action">
+                              <strong>Acción:</strong> {suggestion.action}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       {/* View Toggle */}
