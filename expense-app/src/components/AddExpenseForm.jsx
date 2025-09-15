@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const categories = [
   'AHORRO',
@@ -14,17 +16,13 @@ const categories = [
   'TRANSPORTE'
 ];
 
-const formatDate = (date) => {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-  return firstDay.toISOString().split('T')[0];
-};
 
 const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -42,7 +40,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
         name: name.trim(),
         amount: expenseAmount,
         category,
-        date
+        date: date.toISOString().split('T')[0]
       };
 
       onAddExpense(newExpense);
@@ -51,7 +49,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
       setName('');
       setAmount('');
       setCategory('');
-      setDate('');
+      setDate(new Date());
       setError('');
       setIsFormVisible(false); // Hide form after successful submission
     } else {
@@ -93,12 +91,6 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
     };
   }, [isFormVisible]);
 
-  // Update date when currentMonth changes
-  useEffect(() => {
-    if (isFormVisible) {
-      setDate(formatDate(currentMonth));
-    }
-  }, [currentMonth]);
 
   return (
     <div className="add-expense-form">
@@ -159,12 +151,12 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
 
               <div className="form-group">
                 <label>Fecha:</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                <DatePicker
+                  selected={date}
+                  onChange={(date) => setDate(date)}
+                  dateFormat="dd/MM/yyyy"
+                  className="date-input"
                   required
-                  readOnly
                 />
               </div>
 
