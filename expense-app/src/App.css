@@ -822,6 +822,83 @@ button {
   color: #dc2626;
 }
 
+.expense-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.delete-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.delete-confirm span {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.confirm-btn, .cancel-btn {
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.confirm-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: scale(1.1);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3);
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: scale(1.1);
+}
+
 /* Filter section with light theme */
 .filter-section {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -2823,20 +2900,126 @@ button {
   animation-delay: 0.4s;
 }
 
+/* Footer Styles */
+.footer {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.footer-contact {
+  margin-bottom: 20px;
+}
+
+.footer-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 16px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.footer-email {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.email-icon {
+  font-size: 24px;
+  color: #dc2626;
+  transition: all 0.3s ease;
+}
+
+.email-link {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.email-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.footer-project {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+}
+
+.project-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile Responsive for Footer */
+@media (max-width: 768px) {
+  .footer {
+    padding: 16px;
+    margin-top: 20px;
+  }
+
+  .footer-text {
+    font-size: 16px;
+  }
+
+  .footer-email {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .email-icon {
+    font-size: 20px;
+  }
+
+  .email-link {
+    font-size: 15px;
+  }
+
+  .project-text {
+    font-size: 13px;
+  }
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .savings-suggestions,
   .suggestion-card {
     animation: none;
   }
-  
+
   .suggestion-card:hover,
   .tip-item:hover,
   .summary-card:hover {
     transform: none;
   }
-  
+
   .spinner {
     animation: none;
+  }
+
+  .email-icon {
+    transition: none;
+  }
+
+  .email-link {
+    transition: none;
   }
 }

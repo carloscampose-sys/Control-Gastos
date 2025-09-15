@@ -31,16 +31,45 @@ const getCategoryIcon = (category) => {
   return icons[category] || '📝';
 };
 
-const ExpenseList = ({ expenses }) => {
+const ExpenseList = ({ expenses, onDeleteExpense }) => {
   const [filterCategory, setFilterCategory] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const filteredExpenses = filterCategory
     ? expenses.filter(expense => expense.category === filterCategory)
     : expenses;
 
+  const handleDeleteClick = (expenseId) => {
+    setDeleteConfirm(expenseId);
+  };
+
+  const handleDeleteConfirm = (expenseId) => {
+    onDeleteExpense(expenseId);
+    setDeleteConfirm(null);
+    setSuccessMessage('Gasto eliminado exitosamente');
+
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm(null);
+  };
+
   return (
     <div className="expense-list">
       <h2>Gastos</h2>
+
+      {/* Success message */}
+      {successMessage && (
+        <div className="success-message">
+          {successMessage}
+        </div>
+      )}
+
       <div className="filter-section">
         <label>Filtrar por categoría:</label>
         <select
@@ -66,6 +95,35 @@ const ExpenseList = ({ expenses }) => {
                 <div className="expense-date">{expense.date}</div>
               </div>
               <div className="expense-amount">${expense.amount.toFixed(2)}</div>
+              <div className="expense-actions">
+                {deleteConfirm === expense.id ? (
+                  <div className="delete-confirm">
+                    <span>¿Eliminar?</span>
+                    <button
+                      className="confirm-btn"
+                      onClick={() => handleDeleteConfirm(expense.id)}
+                      title="Confirmar eliminación"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      className="cancel-btn"
+                      onClick={handleDeleteCancel}
+                      title="Cancelar"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeleteClick(expense.id)}
+                    title="Eliminar gasto"
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

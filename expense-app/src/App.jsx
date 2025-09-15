@@ -7,6 +7,7 @@ import ExpenseList from './components/ExpenseList';
 import CategoryDistributionChart from './components/CategoryDistributionChart';
 import NextMonthPredictions from './components/NextMonthPredictions';
 import SavingsSuggestions from './components/SavingsSuggestions';
+import Footer from './components/Footer';
 import './App.css';
 
 function App() {
@@ -113,6 +114,10 @@ function App() {
     setExpenses(prev => [...prev, expense]);
   };
 
+  const handleDeleteExpense = (expenseId) => {
+    setExpenses(prev => prev.filter(expense => expense.id !== expenseId));
+  };
+
   // Filter expenses for current month
   const currentMonthExpenses = expenses.filter(expense => {
     const expenseDate = new Date(expense.date + 'T12:00:00'); // Use noon to avoid timezone issues
@@ -148,8 +153,9 @@ function App() {
             onAddExpense={handleAddExpense}
             budget={currentBudget}
             spent={totalSpent}
+            currentMonth={currentMonth}
           />
-          <ExpenseList expenses={currentMonthExpenses} />
+          <ExpenseList expenses={currentMonthExpenses} onDeleteExpense={handleDeleteExpense} />
         </div>
       </div>
 
@@ -171,6 +177,9 @@ function App() {
         budget={currentBudget}
         currentMonth={currentMonth}
       />
+
+      {/* Footer */}
+      <Footer />
 
     </div>
   );
