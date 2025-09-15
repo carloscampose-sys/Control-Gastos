@@ -5,23 +5,19 @@
  */
 export const getCategoryIcon = (category) => {
   const icons = {
-    'Alimentación': '🍽️',
-    'Transporte': '🚗',
-    'Entretenimiento': '🎬',
-    'Salud': '🏥',
-    'Educación': '📚',
-    'Servicios': '💡',
-    'Ropa': '👕',
-    'Hogar': '🏠',
-    'Otros': '📦',
-    'Tecnología': '💻',
-    'Deportes': '⚽',
-    'Viajes': '✈️',
-    'Mascotas': '🐕',
-    'Belleza': '💄',
-    'Regalos': '🎁'
+    'COMIDA': '🍽️',
+    'TRANSPORTE': '🚗',
+    'ENTRETENIMIENTO': '🎬',
+    'SALUD': '🏥',
+    'ESTUDIO': '📚',
+    'SERVICIOS': '🔧',
+    'GASTOS VARIOS': '🛒',
+    'CASA': '🏠',
+    'DEPORTES': '⚽',
+    'SUSCRIPCIONES': '📺',
+    'AHORRO': '💰'
   };
-  return icons[category] || '📦';
+  return icons[category] || '📝';
 };
 
 /**
@@ -75,30 +71,43 @@ export const generateExpensePredictions = (expenses, currentMonth) => {
  */
 const analyzeCategoryPatterns = (currentExpenses, previousExpenses) => {
   const analysis = {};
-  
+
   // Group current expenses by category
   const currentByCategory = groupExpensesByCategory(currentExpenses);
   const previousByCategory = groupExpensesByCategory(previousExpenses);
-  
-  // Analyze each category in current month
-  Object.keys(currentByCategory).forEach(category => {
-    const currentCategoryExpenses = currentByCategory[category];
+
+  // Get all unique categories from both current and previous expenses
+  const allCategories = new Set([
+    ...Object.keys(currentByCategory),
+    ...Object.keys(previousByCategory)
+  ]);
+
+  // Analyze each category (including those that might have been deleted from current month)
+  allCategories.forEach(category => {
+    const currentCategoryExpenses = currentByCategory[category] || [];
     const previousCategoryExpenses = previousByCategory[category] || [];
-    
+
+    // For important categories, maintain historical patterns even if current expenses are deleted
+    const isImportant = isImportantCategory(category);
+    const hasHistoricalData = previousCategoryExpenses.length > 0;
+
     analysis[category] = {
       currentCount: currentCategoryExpenses.length,
       currentTotal: currentCategoryExpenses.reduce((sum, exp) => sum + exp.amount, 0),
-      currentAverage: currentCategoryExpenses.reduce((sum, exp) => sum + exp.amount, 0) / currentCategoryExpenses.length,
+      currentAverage: currentCategoryExpenses.length > 0
+        ? currentCategoryExpenses.reduce((sum, exp) => sum + exp.amount, 0) / currentCategoryExpenses.length
+        : (hasHistoricalData ? previousCategoryExpenses.reduce((sum, exp) => sum + exp.amount, 0) / previousCategoryExpenses.length : 0),
       previousCount: previousCategoryExpenses.length,
       previousTotal: previousCategoryExpenses.reduce((sum, exp) => sum + exp.amount, 0),
       frequency: calculateFrequency(currentCategoryExpenses, previousCategoryExpenses),
       isRecurrent: isRecurrentCategory(category, currentCategoryExpenses, previousCategoryExpenses),
-      isImportant: isImportantCategory(category),
+      isImportant: isImportant,
       confidence: calculateCategoryConfidence(category, currentCategoryExpenses, previousCategoryExpenses),
-      expenses: currentCategoryExpenses
+      expenses: currentCategoryExpenses,
+      hasHistoricalData: hasHistoricalData
     };
   });
-  
+
   return analysis;
 };
 
@@ -147,8 +156,8 @@ const isRecurrentCategory = (category, currentExpenses, previousExpenses) => {
  */
 const isImportantCategory = (category) => {
   const importantCategories = [
-    'Servicios', 'Alimentación', 'Transporte', 'Salud', 
-    'Hogar', 'Educación'
+    'SERVICIOS', 'COMIDA', 'TRANSPORTE', 'SALUD',
+    'CASA', 'ESTUDIO', 'SUSCRIPCIONES'
   ];
   return importantCategories.includes(category);
 };
@@ -189,35 +198,58 @@ const calculateCategoryConfidence = (category, currentExpenses, previousExpenses
 const generateCategoryPredictions = (categoryAnalysis, currentMonth) => {
   const predictions = [];
   const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
-  
+
   Object.keys(categoryAnalysis).forEach(category => {
     const analysis = categoryAnalysis[category];
-    
+
     // Only predict for recurrent or important categories
     if (analysis.isRecurrent || analysis.isImportant) {
-      // Generate predictions for each expense type in the category
-      const uniqueExpenses = getUniqueExpenseTypes(analysis.expenses);
-      
-      uniqueExpenses.forEach(expenseType => {
+      // For important categories with historical data but no current expenses,
+      // create predictions based on historical patterns
+      if (analysis.isImportant && analysis.hasHistoricalData && analysis.currentCount === 0) {
+        // Create prediction based on historical average for important categories
+        const historicalAverage = analysis.previousTotal / analysis.previousCount;
+
         const prediction = {
-          id: `pred-${category}-${expenseType.name}-${Date.now()}`,
+          id: `pred-${category}-historical-${Date.now()}`,
           category,
-          name: expenseType.name,
-          amount: Math.round(expenseType.averageAmount),
+          name: `${category} (histórico)`,
+          amount: Math.round(historicalAverage),
           icon: getCategoryIcon(category),
-          estimatedDate: estimateNextDate(expenseType.dates, nextMonth),
-          confidence: analysis.confidence,
-          isRecurrent: analysis.isRecurrent,
+          estimatedDate: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15), // Middle of month
+          confidence: Math.max(analysis.confidence, 0.6), // Boost confidence for important historical categories
+          isRecurrent: true, // Consider important historical categories as recurrent
           isImportant: analysis.isImportant,
           frequency: analysis.frequency,
-          source: 'pattern_analysis'
+          source: 'historical_pattern'
         };
-        
+
         predictions.push(prediction);
-      });
+      } else if (analysis.currentCount > 0) {
+        // Generate predictions for current expenses
+        const uniqueExpenses = getUniqueExpenseTypes(analysis.expenses);
+
+        uniqueExpenses.forEach(expenseType => {
+          const prediction = {
+            id: `pred-${category}-${expenseType.name}-${Date.now()}`,
+            category,
+            name: expenseType.name,
+            amount: Math.round(expenseType.averageAmount),
+            icon: getCategoryIcon(category),
+            estimatedDate: estimateNextDate(expenseType.dates, nextMonth),
+            confidence: analysis.confidence,
+            isRecurrent: analysis.isRecurrent,
+            isImportant: analysis.isImportant,
+            frequency: analysis.frequency,
+            source: 'pattern_analysis'
+          };
+
+          predictions.push(prediction);
+        });
+      }
     }
   });
-  
+
   // Sort predictions by confidence and amount
   return predictions.sort((a, b) => {
     if (a.confidence !== b.confidence) {
