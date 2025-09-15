@@ -14,7 +14,12 @@ const categories = [
   'TRANSPORTE'
 ];
 
-const AddExpenseForm = ({ onAddExpense, budget, spent }) => {
+const formatDate = (date) => {
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+  return firstDay.toISOString().split('T')[0];
+};
+
+const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -61,7 +66,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent }) => {
       setName('');
       setAmount('');
       setCategory('');
-      setDate('');
+      setDate(formatDate(currentMonth));
       setError('');
     }
   };
@@ -87,6 +92,13 @@ const AddExpenseForm = ({ onAddExpense, budget, spent }) => {
       document.body.style.overflow = 'unset';
     };
   }, [isFormVisible]);
+
+  // Update date when currentMonth changes
+  useEffect(() => {
+    if (isFormVisible) {
+      setDate(formatDate(currentMonth));
+    }
+  }, [currentMonth]);
 
   return (
     <div className="add-expense-form">
@@ -152,6 +164,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent }) => {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
+                  readOnly
                 />
               </div>
 
