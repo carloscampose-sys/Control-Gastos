@@ -14,10 +14,6 @@ const categories = [
   'TRANSPORTE'
 ];
 
-const formatDate = (date) => {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-  return firstDay.toISOString().split('T')[0];
-};
 
 const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -66,7 +62,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
       setName('');
       setAmount('');
       setCategory('');
-      setDate(formatDate(currentMonth));
+      setDate(new Date().toISOString().split('T')[0]);
       setError('');
     }
   };
@@ -93,12 +89,6 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
     };
   }, [isFormVisible]);
 
-  // Update date when currentMonth changes
-  useEffect(() => {
-    if (isFormVisible) {
-      setDate(formatDate(currentMonth));
-    }
-  }, [currentMonth]);
 
   return (
     <div className="add-expense-form">
@@ -161,6 +151,7 @@ const AddExpenseForm = ({ onAddExpense, budget, spent, currentMonth }) => {
                 <label>Fecha:</label>
                 <input
                   type="date"
+                  className="date-input"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
