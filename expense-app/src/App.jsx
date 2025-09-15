@@ -6,6 +6,7 @@ import AddExpenseForm from './components/AddExpenseForm';
 import ExpenseList from './components/ExpenseList';
 import CategoryDistributionChart from './components/CategoryDistributionChart';
 import NextMonthPredictions from './components/NextMonthPredictions';
+import SavingsSuggestions from './components/SavingsSuggestions';
 import './App.css';
 
 function App() {
@@ -161,6 +162,13 @@ function App() {
       {/* Next Month Predictions */}
       <NextMonthPredictions
         expenses={expenses}
+        currentMonth={currentMonth}
+      />
+
+      {/* Savings Suggestions */}
+      <SavingsSuggestions
+        expenses={expenses}
+        budget={currentBudget}
         currentMonth={currentMonth}
       />
 
